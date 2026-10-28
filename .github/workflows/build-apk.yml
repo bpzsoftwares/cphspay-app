@@ -3,59 +3,51 @@ name: Build APK CphsPay
 on:
   push:
     branches: [main, master]
-  workflow_dispatch:  # permite rodar manualmente
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Baixar código
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Node.js 22
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
-      # 3. Java 17 (necessário para Android build)
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 4. Android SDK
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      # 5. Instalar dependências npm
       - name: Install dependencies
         run: npm ci
 
-      # 6. Build do React (produção)
       - name: Build React app
         run: npm run build
         env:
           VITE_API_URL: http://mc.elylphosting.com.br:25597/api
 
-      # 7. Capacitor sync
       - name: Capacitor sync Android
         run: npx cap sync android
 
-      # 8. Permissão no gradlew
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      # 9. Build APK debug (sem precisar de keystore)
+      - name: Accept Android SDK licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
       - name: Build APK (debug)
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
-      # 10. Fazer upload do APK como artefato
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
