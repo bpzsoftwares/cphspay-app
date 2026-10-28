@@ -62,24 +62,3 @@ jobs:
           name: CphsPay-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
-
-      # 11. (Opcional) Build APK release com assinatura
-      # Para gerar APK release assinado, adicione estes secrets no GitHub:
-      # KEYSTORE_BASE64, KEY_ALIAS, KEY_PASSWORD, STORE_PASSWORD
-      - name: Build APK (release) — se tiver keystore configurado
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
-        working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-
-      - name: Upload APK Release
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: CphsPay-release
-          path: android/app/build/outputs/apk/release/app-release.apk
-          retention-days: 30
